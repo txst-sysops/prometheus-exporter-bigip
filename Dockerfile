@@ -15,7 +15,7 @@ WORKDIR $APP_PATH
 
 # Install govendor and build the application
 RUN go install github.com/kardianos/govendor@latest
-RUN ls -l /go/src/github.com/
+RUN ls -l /go/src/github.com/txst-sysops/ /go/src/github.com/txst-sysops/*/
 
 # main build
 RUN $GO_PATH/bin/govendor build +p
