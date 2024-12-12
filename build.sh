@@ -35,7 +35,11 @@ build(){
 	echo "Initiating build process for version $version" >&2
 
 	tmp=$(mktemp)
-	"$DOCKER" build . -t "$id" | tee /dev/stderr > $tmp
+	tail -f $tmp &
+	echo $!
+	ps aux | grep tail
+	exit
+	"$DOCKER" build . -t "$id" > $tmp
 	if [[ $? != 0 ]]; then
 		echo "Docker build failed"
 		exit 1

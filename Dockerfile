@@ -6,13 +6,12 @@ ENV GO_PATH /go
 ENV APP_PATH $GO_PATH/src/github.com/txst-sysops/prometheus-exporter-bigip
 
 # Install build dependencies
-RUN apk add --no-cache git mercurial
-
-# Set up the application directory
-WORKDIR $APP_PATH
+RUN apk add --update -t build-deps go git mercurial libc-dev gcc libgcc
 
 # Copy application source code into the build image
-COPY . .
+COPY . $APP_PATH
+
+WORKDIR $APP_PATH
 
 # Install govendor and build the application
 RUN go install github.com/kardianos/govendor@latest && \
@@ -26,6 +25,8 @@ EXPOSE 9142
 
 # Copy the compiled binary from the builder stage
 COPY --from=builder $APP_PATH/bigip_exporter /bigip_exporter
+
+RUN 
 
 # Set the entrypoint
 ENTRYPOINT ["/bigip_exporter"]
