@@ -26,6 +26,8 @@ RUN $GO_PATH/bin/govendor build +p
 EXPOSE 9142
 
 # Copy the compiled binary from the builder stage
+RUN echo -n PWD: && pwd
+RUN ls -l
 RUN cp bigip_exporter /bigip_exporter
 #COPY --from=builder $APP_PATH/bigip_exporter /bigip_exporter
 
