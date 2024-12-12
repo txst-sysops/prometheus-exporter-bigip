@@ -43,14 +43,18 @@ build(){
 		exit 1
 	fi
 	kill -9 $tailpid >/dev/null 2>/dev/null
-	id=$( cat "$tmp" | awk 'END {print $3}' )
-	echo rm -f "$tmp"
+	echo >&2
+	id=$( cat "$tmp" | tail -1 )
+	cat "$tmp" | tail -2 | head -1
+	echo >&2
+	rm -f "$tmp"
 
-	echo $id
+	echo Pushing $id to $OWNER_NAME/$PROJECT_NAME:$version
 	$DOCKER tag $id $OWNER_NAME/$PROJECT_NAME:$version
 	$DOCKER tag $id $OWNER_NAME/$PROJECT_NAME:latest
 	$DOCKER push $OWNER_NAME/$PROJECT_NAME:$version
 	$DOCKER push $OWNER_NAME/$PROJECT_NAME:latest
+
 }
 
 preflight
