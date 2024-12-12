@@ -12,8 +12,10 @@ REGISTRY_NAME=$( cat build.json | jq -r .registry_name )
 OWNER_NAME=$(    cat build.json | jq -r .owner_name    )
 PROJECT_NAME=$(  cat build.json | jq -r .project_name  )
 
-fmt(){
-	find . -not -path "./vendor/*" -name "*.go" -exec go fmt {} \;
+main(){
+	preflight
+	refs=$(build)
+	publish $refs
 }
 
 preflight(){
@@ -37,7 +39,8 @@ build(){
 	tmp=$(mktemp)
 	tail -f $tmp 2>/dev/null &
 	tailpid=$!
-	"$DOCKER" build . --arch linux/amd64 --tag "$version" > $tmp
+	"$DOCKER" build . --tag "$version" > $tmp
+	#"$DOCKER" build . --arch linux/amd64,linux/arm64 --tag "$version" > $tmp
 	if [[ $? != 0 ]]; then
 		echo "Docker build failed"
 		exit 1
@@ -48,18 +51,17 @@ build(){
 	cat "$tmp" | tail -2 | head -1
 	echo >&2
 	rm -f "$tmp"
+	echo $id $version
+}
 
+publish(){
+	id="$1"
+	version="$2"
 	echo Pushing $id to $OWNER_NAME/$PROJECT_NAME:$version
 	$DOCKER tag $id $OWNER_NAME/$PROJECT_NAME:$version
 	$DOCKER tag $id $OWNER_NAME/$PROJECT_NAME:latest
 	$DOCKER push $OWNER_NAME/$PROJECT_NAME:$version
 	$DOCKER push $OWNER_NAME/$PROJECT_NAME:latest
-
 }
 
-preflight
-if [[ $1 == "fmt" ]]; then
-	fmt
-else
-	build 
-fi
+main "$@"
