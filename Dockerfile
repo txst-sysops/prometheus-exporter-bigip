@@ -5,13 +5,13 @@ FROM golang:1.11.1-alpine AS builder
 ENV GO_PATH /go
 ENV APP_PATH $GO_PATH/src/github.com/txst-sysops/prometheus-exporter-bigip
 
-# Install build dependencies
-RUN apk add --update -t build-deps go git mercurial libc-dev gcc libgcc
-
 # Copy application source code into the build image
 COPY . $APP_PATH
 
-WORKDIR $APP_PATH
+# Install build dependencies
+RUN apk add --update -t build-deps go git mercurial libc-dev gcc libgcc
+
+#WORKDIR $APP_PATH
 
 # Install govendor and build the application
 RUN go get -u github.com/kardianos/govendor
