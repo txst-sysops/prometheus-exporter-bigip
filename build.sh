@@ -8,7 +8,9 @@ fi
 
 cd "$( dirname "$0" )"
 
-PROJECT_NAME=$( cat build.json | jq -r .project_name )
+REGISTRY_NAME=$( cat build.json | jq -r .registry_name )
+OWNER_NAME=$(    cat build.json | jq -r .owner_name    )
+PROJECT_NAME=$(  cat build.json | jq -r .project_name  )
 
 fmt(){
 	find . -not -path "./vendor/*" -name "*.go" -exec go fmt {} \;
@@ -18,6 +20,12 @@ preflight(){
 	if [[ $( git status --porcelain=1 | wc -l ) -gt 0 ]]; then
 		echo "You have unstaged modifications in your repo." >&2
 		echo "Please commit and tag the new version before running build script." >&2
+		exit 1
+	fi
+
+	if [[ "$( podman login --get-login "$REGISTRY_NAME" )" != "$OWNER_NAME" ]]; then
+		echo "You need to log in to the registry first." >&2
+		echo "Run: podman login $REGISTRY_NAME -u $OWNER_NAME" >&2
 		exit 1
 	fi
 }
@@ -36,10 +44,10 @@ build(){
 	rm -f "$tmp"
 
 	echo $id
-	docker tag $id expressenab/bigip_exporter:$version
-	docker tag $id expressenab/bigip_exporter:latest
-	#docker push expressenab/bigip_exporter:$version
-	#docker push expressenab/bigip_exporter:latest
+	podman tag $id $OWNER_NAME/$PROJECT_NAME:$version
+	podman tag $id $OWNER_NAME/$PROJECT_NAME:latest
+	podman push $OWNER_NAME/$PROJECT_NAME:$version
+	podman push $OWNER_NAME/$PROJECT_NAME:latest
 }
 
 preflight

@@ -13,5 +13,6 @@
 !Dockerfile
 !example_bigip_exporter.yml
 !build.sh
+!build.json
 src
 pkg
