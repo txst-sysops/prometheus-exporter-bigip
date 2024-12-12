@@ -3,7 +3,7 @@ FROM golang:1.20-alpine AS builder
 
 # Set environment variables for Go paths
 ENV GO_PATH /go
-ENV APP_PATH $GO_PATH/src/bigip_exporter
+ENV APP_PATH $GO_PATH/src/github.com/txst-sysops/prometheus-exporter-bigip
 
 # Install build dependencies
 RUN apk add --no-cache git mercurial
