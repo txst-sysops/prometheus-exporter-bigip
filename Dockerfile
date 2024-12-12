@@ -16,7 +16,7 @@ RUN apk add --update -t build-deps go git mercurial libc-dev gcc libgcc
 # Install govendor and build the application
 RUN go get -u github.com/kardianos/govendor
 
-RUN go -h
+RUN go help build
 
 # main build
 RUN $GOPATH/bin/govendor build +p
