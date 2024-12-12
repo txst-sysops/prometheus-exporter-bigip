@@ -14,5 +14,6 @@
 !example_bigip_exporter.yml
 !build.sh
 !build.json
+!go.mod
 src
 pkg
