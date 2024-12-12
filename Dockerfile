@@ -20,7 +20,7 @@ RUN go get -u github.com/kardianos/govendor
 RUN $GO_PATH/bin/govendor build +p
 
 # Final Stage
-FROM alpine:latest
+#FROM alpine:latest
 
 # Expose the application port
 EXPOSE 9142
