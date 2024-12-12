@@ -48,8 +48,8 @@ build(){
 	fi
 	kill -9 $tailpid >/dev/null 2>/dev/null
 	echo >&2
-	id=$( cat "$tmp" | tail -1 )
-	cat "$tmp" | tail -2 | head -1
+	id=$( cat "$tmp" | tail -1 | awk '{ print $NF }' )
+	cat "$tmp" | tail -2 | head -1 >&2
 	echo >&2
 	rm -f "$tmp"
 	echo $id $version
