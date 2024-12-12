@@ -15,6 +15,7 @@ PROJECT_NAME=$(  cat build.json | jq -r .project_name  )
 main(){
 	preflight
 	refs=$(build)
+	echo refs=$refs
 	publish $refs
 }
 
