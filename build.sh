@@ -23,9 +23,9 @@ preflight(){
 		exit 1
 	fi
 
-	if [[ "$( podman login --get-login "$REGISTRY_NAME" )" != "$OWNER_NAME" ]]; then
+	if [[ "$( $DOCKER login --get-login "$REGISTRY_NAME" )" != "$OWNER_NAME" ]]; then
 		echo "You need to log in to the registry first." >&2
-		echo "Run: podman login $REGISTRY_NAME -u $OWNER_NAME" >&2
+		echo "Run: $DOCKER login $REGISTRY_NAME -u $OWNER_NAME" >&2
 		exit 1
 	fi
 }
@@ -41,13 +41,13 @@ build(){
 		exit 1
 	fi
 	id=$( cat "$tmp" | awk 'END {print $3}' )
-	rm -f "$tmp"
+	echo rm -f "$tmp"
 
 	echo $id
-	podman tag $id $OWNER_NAME/$PROJECT_NAME:$version
-	podman tag $id $OWNER_NAME/$PROJECT_NAME:latest
-	podman push $OWNER_NAME/$PROJECT_NAME:$version
-	podman push $OWNER_NAME/$PROJECT_NAME:latest
+	$DOCKER tag $id $OWNER_NAME/$PROJECT_NAME:$version
+	$DOCKER tag $id $OWNER_NAME/$PROJECT_NAME:latest
+	$DOCKER push $OWNER_NAME/$PROJECT_NAME:$version
+	$DOCKER push $OWNER_NAME/$PROJECT_NAME:latest
 }
 
 preflight
