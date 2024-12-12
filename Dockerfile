@@ -2,22 +2,24 @@
 FROM golang:1.11.1-alpine AS builder
 
 # Set environment variables for Go paths
-ENV GO_PATH /go
-ENV APP_PATH $GO_PATH/src/github.com/txst-sysops/prometheus-exporter-bigip
+ENV GOPATH /go
+ENV APPPATH $GOPATH/src/github.com/txst-sysops/prometheus-exporter-bigip
 
 # Copy application source code into the build image
-COPY . $APP_PATH
+COPY . $APPPATH
 
 # Install build dependencies
 RUN apk add --update -t build-deps go git mercurial libc-dev gcc libgcc
 
-#WORKDIR $APP_PATH
+#WORKDIR $APPPATH
 
 # Install govendor and build the application
 RUN go get -u github.com/kardianos/govendor
 
+RUN go -h
+
 # main build
-RUN $GO_PATH/bin/govendor build +p
+RUN $GOPATH/bin/govendor build +p
 
 # Final Stage
 #FROM alpine:latest
@@ -29,7 +31,7 @@ EXPOSE 9142
 RUN echo -n PWD: && pwd
 RUN ls -l
 RUN cp bigip_exporter /bigip_exporter
-#COPY --from=builder $APP_PATH/bigip_exporter /bigip_exporter
+#COPY --from=builder $APPPATH/bigip_exporter /bigip_exporter
 
 RUN 
 
