@@ -26,7 +26,7 @@ FROM alpine:latest
 EXPOSE 9142
 
 # Copy the compiled binary from the builder stage
-RUN cp $APP_PATH/bigip_exporter /bigip_exporter
+RUN cp bigip_exporter /bigip_exporter
 #COPY --from=builder $APP_PATH/bigip_exporter /bigip_exporter
 
 RUN 
