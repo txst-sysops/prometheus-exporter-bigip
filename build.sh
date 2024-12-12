@@ -35,13 +35,14 @@ build(){
 	echo "Initiating build process for version $version" >&2
 
 	tmp=$(mktemp)
-	tail -f $tmp &
+	tail -f $tmp 2>/dev/null &
 	tailpid=$!
 	"$DOCKER" build . --tag "$version" > $tmp
 	if [[ $? != 0 ]]; then
 		echo "Docker build failed"
 		exit 1
 	fi
+	kill -9 $tailpid >/dev/null 2>/dev/null
 	id=$( cat "$tmp" | awk 'END {print $3}' )
 	echo rm -f "$tmp"
 

@@ -14,8 +14,11 @@ COPY . $APP_PATH
 WORKDIR $APP_PATH
 
 # Install govendor and build the application
-RUN go install github.com/kardianos/govendor@latest && \
-    $GO_PATH/bin/govendor build +p
+RUN go install github.com/kardianos/govendor@latest
+RUN ls -l /go/ /go/src/
+
+# main build
+RUN $GO_PATH/bin/govendor build +p
 
 # Final Stage
 FROM alpine:latest
