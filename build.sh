@@ -37,7 +37,7 @@ build(){
 	tmp=$(mktemp)
 	tail -f $tmp &
 	tailpid=$!
-	"$DOCKER" build . -t "$id" > $tmp
+	"$DOCKER" build . --tag "$version" > $tmp
 	if [[ $? != 0 ]]; then
 		echo "Docker build failed"
 		exit 1
