@@ -5,7 +5,7 @@ Prometheus exporter for BIG-IP statistics. Uses iControl REST API.
 Previous versions can be found under [Tags](https://github.com/txst-sysops/prometheus-exporter-bigip/tags) and docker images are available at [Docker Hub](https://hub.docker.com/r/txstsysops/prometheus-exporter-bigip/tags).
 
 ## Usage
-The bigip_exporter is also available as a docker image.
+The bigip_exporter is available as a docker image.
 ```
 podman run -p 9142:9142 -v $PWD/config.yaml:/config.yaml docker.io/txstsysops/prometheus-exporter-bigip:latest
 ```
