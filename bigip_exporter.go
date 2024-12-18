@@ -2,7 +2,6 @@ package main
 
 import (
 	"net/http"
-	"html/template"
 	"fmt"
 
 	"github.com/txst-sysops/prometheus-exporter-bigip/collector"
