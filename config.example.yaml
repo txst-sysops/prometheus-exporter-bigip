@@ -27,7 +27,7 @@ credentials:
     password: <f5 password>
 
     # Authentication method to use when logging in. Default is to use tokens, unless this is set to "basic".
-	# Anything other than "basic" will use token-based auth.
+    # Anything other than "basic" will use token-based auth.
     authtype: token
 
 
