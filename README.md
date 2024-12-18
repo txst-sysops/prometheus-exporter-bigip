@@ -35,7 +35,7 @@ sources.NAME.credentials |  | Name of the credentials to use
 sources.NAME.partitions |  | Array of bigip partition names to include in metrics. By default, all partitions are included.
 
 ### View available metrics endpoints
-You can see which endpoints are available using HTTP GET to `/metrics`. The response will include links to each of the configured endpoints, e.g. `/metrics/ltm1`.
+You can see which endpoints are available using HTTP GET to `/metrics?target=`. The response will include links to each of the configured endpoints, e.g. `/metrics?target=ltm1`.
 
 ## Implemented metrics
 * Virtual Server
