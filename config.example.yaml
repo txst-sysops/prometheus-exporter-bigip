@@ -40,7 +40,12 @@ sources:
     # IP or DNS name
     host: f5-ltm-1.example.com
 
+    # default is 443
+    port: 443
+
     # Name of credentials to use, as defined above
     credentials: production
 
+    # List of partitios to include metrics for. Unless specified, all partitions are included.
+    partitions: [ "part1", "part2" ]
 
