@@ -17,5 +17,4 @@
 !go.mod
 src
 pkg
-!config.json.example
-!bootstrap.sh
+!config.example.yaml

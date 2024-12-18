@@ -1,0 +1,46 @@
+# Global exporter config
+exporter:
+
+  # defaults to 0.0.0.0
+  # (DO NOT CHANGE THIS FOR CONTAINERS, only standalone)
+  bind_address: 0.0.0.0
+
+  # defaults to 9142
+  # (DO NOT CHANGE THIS FOR CONTAINERS, only standalone)
+  bind_port: 9142
+
+  # defaults to info
+  log_level: info
+
+  # default namespace is bigip, can override if needed
+  namespace: bigip
+
+
+# Define credentials to use with each of the F5 appliances
+credentials:
+
+  # Credential name will be referenced in each of the sources
+  production:
+
+    # Login credentials
+    username: <f5 username>
+    password: <f5 password>
+
+    # Authentication method to use when logging in. Default is to use tokens, unless this is set to "basic".
+	# Anything other than "basic" will use token-based auth.
+    authtype: token
+
+
+# List of F5 appliances to include
+sources:
+
+  # Unique name for this bigip appliance
+  ltm1:
+
+    # IP or DNS name
+    host: f5-ltm-1.example.com
+
+    # Name of credentials to use, as defined above
+    credentials: production
+
+
