@@ -38,7 +38,7 @@ build(){
 	echo "Initiating build process for version $version" >&2
 
 	tmp=$(mktemp)
-	tail -f $tmp 2>/dev/null &
+	tail -f $tmp >&2 &
 	tailpid=$!
 	"$DOCKER" build . --arch "linux/amd64" --tag "$version" > $tmp
 	if [[ $? != 0 ]]; then
