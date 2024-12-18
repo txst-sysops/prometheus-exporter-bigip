@@ -15,7 +15,6 @@ PROJECT_NAME=$(  cat build.json | jq -r .project_name  )
 main(){
 	preflight
 	refs=$(build)
-	echo refs=$refs
 	publish $refs
 }
 
@@ -48,7 +47,6 @@ build(){
 	kill -9 $tailpid >/dev/null 2>/dev/null
 	echo >&2
 	id=$( cat "$tmp" | tail -1 | awk '{ print $NF }' )
-	cat "$tmp" | tail -2 | head -1 >&2
 	echo >&2
 	rm -f "$tmp"
 	echo $id $version
