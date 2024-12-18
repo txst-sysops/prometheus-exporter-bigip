@@ -29,33 +29,46 @@ func configIntDefault(value int, fallback int) int {
 }
 
 func listen(exporterBindAddress string, exporterBindPort int, sources map[string]*prometheus.Registry) {
-	for sourceName, registry := range sources {
-		endpoint := fmt.Sprintf("/metrics/%s", sourceName)
-		http.Handle(endpoint, promhttp.HandlerFor(registry, promhttp.HandlerOpts{}))
-		logger.Infof("Registered endpoint: %s", endpoint)
-	}
+    // Handler for the /metrics endpoint
+    http.HandleFunc("/metrics", func(w http.ResponseWriter, r *http.Request) {
+        target := r.URL.Query().Get("target")
+        if target == "" {
+            http.Error(w, "Missing 'target' query parameter", http.StatusBadRequest)
+            return
+        }
 
-	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte(`<html>
-			<head><title>BIG-IP Exporter</title></head>
-			<body>
-			<h1>BIG-IP Exporter</h1>
-			<p>Use the following endpoints to scrape metrics:</p>
-			<ul>
-		`))
-		for sourceName := range sources {
-			w.Write([]byte(fmt.Sprintf(`<li><a href="/metrics/%s">/metrics/%s</a></li>
+        registry, ok := sources[target]
+        if !ok {
+            http.Error(w, fmt.Sprintf("Target '%s' not found", target), http.StatusNotFound)
+            return
+        }
+
+        // Serve metrics using the matching registry
+        promhttp.HandlerFor(registry, promhttp.HandlerOpts{}).ServeHTTP(w, r)
+    })
+
+    // Root endpoint for listing available targets
+    http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+        w.Write([]byte(`<html>
+            <head><title>BIG-IP Exporter</title></head>
+            <body>
+            <h1>BIG-IP Exporter</h1>
+            <p>Available targets:</p>
+            <ul>
+        `))
+        for sourceName := range sources {
+            w.Write([]byte(fmt.Sprintf(`<li><a href="/metrics?target=%s">%s</a></li>
 			`, sourceName, sourceName)))
-		}
-		w.Write([]byte(`</ul>
-			</body>
-			</html>
-		`))
-	})
+        }
+        w.Write([]byte(`</ul>
+            </body>
+            </html>
+        `))
+    })
 
-	exporterBind := fmt.Sprintf("%s:%d", exporterBindAddress, exporterBindPort)
-	logger.Infof("Exporter listening on %s", exporterBind)
-	logger.Criticalf("Process failed: %s", http.ListenAndServe(exporterBind, nil))
+    exporterBind := fmt.Sprintf("%s:%d", exporterBindAddress, exporterBindPort)
+    logger.Infof("Exporter listening on %s", exporterBind)
+    logger.Criticalf("Process failed: %s", http.ListenAndServe(exporterBind, nil))
 }
 
 func main() {
