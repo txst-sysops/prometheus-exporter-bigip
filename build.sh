@@ -49,6 +49,12 @@ build(){
 	id=$( cat "$tmp" | tail -1 | awk '{ print $NF }' )
 	echo >&2
 	rm -f "$tmp"
+
+	if ! echo "$id" | grep -qE '^[a-f0-9]+$'; then
+		echo "Build error, unexpected format in '$id'" >&2
+		exit 1
+	fi
+
 	echo $id $version
 }
 
