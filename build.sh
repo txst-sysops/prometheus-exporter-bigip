@@ -50,17 +50,18 @@ build(){
 	echo >&2
 	rm -f "$tmp"
 
-	if ! echo "$id" | grep -qE '^[a-f0-9]+$'; then
-		echo "Build error, unexpected format in '$id'" >&2
-		exit 1
-	fi
-
 	echo $id $version
 }
 
 publish(){
 	id="$1"
 	version="$2"
+
+	if ! echo "$id" | grep -qE '^[a-f0-9]+$'; then
+		echo "Build error, unexpected ref '$id'" >&2
+		exit 1
+	fi
+
 	echo Pushing $id to $OWNER_NAME/$PROJECT_NAME:$version
 	$DOCKER tag $id $OWNER_NAME/$PROJECT_NAME:$version
 	$DOCKER tag $id $OWNER_NAME/$PROJECT_NAME:latest
