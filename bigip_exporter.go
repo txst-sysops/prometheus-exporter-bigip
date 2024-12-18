@@ -41,13 +41,13 @@ func listen(exporterBindAddress string, exporterBindPort int, sources map[string
 			<body>
 			<h1>BIG-IP Exporter</h1>
 			<p>Use the following endpoints to scrape metrics:</p>
-			<ul>`))
+			<ul>\n`))
 		for sourceName := range sources {
-			w.Write([]byte(fmt.Sprintf(`<li><a href="/metrics/%s">/metrics/%s</a></li>`, sourceName, sourceName)))
+			w.Write([]byte(fmt.Sprintf(`<li><a href="/metrics/%s">/metrics/%s</a></li>\n`, sourceName, sourceName)))
 		}
 		w.Write([]byte(`</ul>
 			</body>
-			</html>`))
+			</html>\n`))
 	})
 
 	exporterBind := fmt.Sprintf("%s:%d", exporterBindAddress, exporterBindPort)
