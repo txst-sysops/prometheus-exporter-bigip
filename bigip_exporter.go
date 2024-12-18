@@ -88,8 +88,6 @@ func main() {
 		sourceRegistries[name] = registry
 	}
 
-	listenerHost := configStringDefault(cfg.Exporter.BindAddress, "0.0.0.0")
-	listenerPort := configIntDefault(cfg.Exporter.BindPort, 9142)
-	listen(listenerHost, listenerPort, sourceRegistries)
+	listen(cfg.Exporter.BindAddress, cfg.Exporter.BindPort, sourceRegistries)
 }
 

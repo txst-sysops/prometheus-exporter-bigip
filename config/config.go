@@ -47,6 +47,8 @@ func init() {
 	viper.SetConfigType("yaml")
 
 	viper.SetDefault("exporter.namespace", "bigip")
+	viper.SetDefault("exporter.bind_address", "0.0.0.0")
+	viper.SetDefault("exporter.bind_port", 9142)
 
 	readConfigFile(configFile)
 
