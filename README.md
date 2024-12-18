@@ -5,72 +5,37 @@ Prometheus exporter for BIG-IP statistics. Uses iControl REST API.
 The latest version is 1.0.0. All releases can be found under [Releases](https://github.com/ExpressenAB/bigip_exporter/releases) and docker images are available at [Docker Hub](https://hub.docker.com/r/expressenab/bigip_exporter/tags/)(Thanks to [0x46616c6b](https://github.com/0x46616c6b)).
 
 ## Usage
-The bigip_exporter is easy to use. Example:
-```
-./bigip_exporter --bigip.host <bigip-host> --bigip.port 443 --bigip.username admin --bigip.password admin
-```
-
-Alternatively, passing a configuration file:
-```
-./bigip_exporter --bigip.host <bigip-host> --bigip.port 443 --exporter.config my_config_file.yml
-```
-
-Or, using environment variables to pass you parameters
-```
-export BE_BIGIP_HOST=<bigip-host>
-export BE_BIGIP_PORT=443
-export BE_EXPORTER_BIND_PORT=
-./bigip_exporter
-```
-
-### Docker
 The bigip_exporter is also available as a docker image.
 ```
-docker run -p 9142:9142 expressenab/bigip_exporter --bigip.host <bigip-host> --bigip.port 443 --bigip.username admin --bigip.password admin
+podman run -p 9142:9142 -v $PWD/config.yaml:/config.yaml docker.io/txstsysops/prometheus-exporter-bigip:latest
 ```
 
-### Parameters
-Parameters can be passed to the exporter in three different ways. They can be passed using flags, environment variables, a configuration file or a combination of the three. The precedence order is as follows with each item taking precedence over the item below it:
+### Configuration
 
-- flag
-- env
-- config
+Take a look at the [example configuration file](https://github.com/txst-sysops/prometheus-exporter-bigip/blob/master/config.example.yaml) to get a sense of the data structure.
 
-#### Flags
-This application now uses [pflag](https://github.com/spf13/pflag) instead of the standard flag library. Therefore all flags now follow the POSIX standard and should be preceeded by `--`
+The table below shows dot-notation format for configuration options. Both the credentials and sources list are hashes; where it says NAME below, you would use a discinct name.
 
-Flag | Description | Default
------|-------------|---------
-bigip.basic_auth | Use HTTP Basic instead of Token for authentication | false
-bigip.host | BIG-IP host | localhost
-bigip.port | BIG-IP port | 443
-bigip.username | BIG-IP username | user
-bigip.password | BIG-IP password | pass
-exporter.bind_address | The address the exporter should bind to | All interfaces
-exporter.bind_port | Which port the exporter should listen on | 9142
-exporter.partitions | A comma separated list containing the partitions that should be exported | All partitions
-exporter.namespace | The namespace used in prometheus labels | bigip
-exporter.config | A path to a yaml configuration file | none
-exporter.debug | Print configuration on startup | False
+The credentials are referenced by name within each source, which makes it easier to update 
+credentials in one location instead of having to update each instance. The name you choose 
+for credentials never appears anywhere in prometheus metrics.
 
-#### Environment variables
-All options available as flags can be passed as environment variables. Below is a table of flag->environment variable mappings
+Config | Default | Description
+-------|---------|-------------
+exporter.log_level | "INFO" | Log level to use. See [loggo documentation](https://github.com/juju/loggo?tab=readme-ov-file#type-level) for available log levels.
+exporter.bind_address | "0.0.0.0" | Address to bind HTTP listener to. DO NOT CHANGE FOR CONTAINERS
+exporter.bind_port | 9142 | Port to bind HTTP listener to. DO NOT CHANGE FOR CONTAINERS
+exporter.namespace | "bigip" | Custom prometheus namespace to use on all metrics
+credentials.NAME.username |  | Login user for bigip appliance
+credentials.NAME.password |  | Login password for bigip appliance
+credentials.NAME.authtype | "token" | If set to "basic", basic authentication method is used
+sources.NAME.host |  | Address or DNS name of the bigip appliance
+sources.NAME.port | 443 | Port to connect to the bigip appliance on
+sources.NAME.credentials |  | Name of the credentials to use
+sources.NAME.partitions |  | Array of bigip partition names to include in metrics. By default, all partitions are included.
 
-Flag | Environment variable
------|---------------------
-bigip.basic_auth | BE_BIGIP_BASIC_AUTH
-bigip.host | BE_BIGIP_HOST
-bigip.port | BE_BIGIP_PORT
-bigip.username | BE_BIGIP_USERNAME
-bigip.password | BE_BIGIP_PASSWORD
-exporter.bind_address | BE_EXPORTER_BIND_ADDRESS
-exporter.bind_port | BE_EXPORTER_BIND_PORT
-exporter.partitions | BE_EXPORTER_PARTITIONS
-exporter.namespace | BE_EXPORTER_NAMESPACE
-exporter.debug | BE_EXPORTER_DEBUG
-
-#### Configuration file
-Take a look at this [example configuration file](https://github.com/ExpressenAB/bigip_exporter/blob/master/example_bigip_exporter.yml)
+### View available metrics endpoints
+You can see which endpoints are available using HTTP GET to `/metrics`. The response will include links to each of the configured endpoints, e.g. `/metrics/ltm1`.
 
 ## Implemented metrics
 * Virtual Server
@@ -86,20 +51,16 @@ Currently only version 12.0.0 and 12.1.1 are tested. If you experience any probl
 
 ## Building
 ### Building locally
-This project uses [govendor](https://github.com/kardianos/govendor). If you do not already have that installed, take a detour and install that beforehand.
+Use native podman/docker tools to build a local container image for testing:
 ```
-# This assumes that you already have go and govendor installed and $GOPATH configured
-go get github.com/ExpressenAB/bigip_exporter
-cd $GOPATH/src/github.com/ExpressenAB/bigip_exporter
-govendor build +p
+cd $REPO_DIR
+podman build .
 ```
-### Cross compilation
-Go offers possibility to cross compile the application for different use on a different OS and architecture. This is achieved by setting the environment valiables `GOOS` and `GOARCH`. If you for example want to build for linux on an amd64 architecture the `go build` step can be replaced with the following:
-```
-GOOS=linux GOARCH=amd64 govendor build +p
-```
-A list of available options for `GOOS` and `GOARCH` is available in the [documentation](https://golang.org/doc/install/source#environment)
 
-## Possible improvements
-### Gather data in the background
-Currently the data is gathered when the `/metrics` endpoint is called. This causes the request to take about 4-6 seconds before completing. This could be fixed by having a go thread that gathers data at regular intervals and that is returned upon a call to the `/metrics` endpoint. This would however go against the [guidelines](https://prometheus.io/docs/instrumenting/writing_exporters/#scheduling).
+### Publishing
+If you want to publish your own version to the docker registry, be sure to save your registry username + project name into build.json.
+
+1. Run `git status` and make sure all your changes have been committed. If not, go ahead and commit now.
+2. Run `git tag` to show the list of existing tags. Identify the "newest" version number (e.g. 1.3.1 is newer than 1.2.17)
+3. Create a new tag by incrementing major/minor/revision as needed (`git tag $VERSION`)
+4. Run `build.sh` without any arguments
