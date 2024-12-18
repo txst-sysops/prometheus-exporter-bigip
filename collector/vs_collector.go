@@ -482,7 +482,7 @@ func (c *VSCollector) Collect(ch chan<- prometheus.Metric) {
 	err, allVirtualServerStats := c.bigip.ShowAllVirtualStats()
 	if err != nil {
 		c.collectorScrapeStatus.WithLabelValues("vs").Set(float64(0))
-		logger.Warningf("Failed to get statistics for virtual servers")
+		logger.Warningf("Failed to get statistics for virtual servers: %s", err)
 	} else {
 		for key, virtualStats := range allVirtualServerStats.Entries {
 			keyParts := strings.Split(key, "/")

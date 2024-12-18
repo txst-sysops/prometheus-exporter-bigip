@@ -350,7 +350,7 @@ func (c *PoolCollector) Collect(ch chan<- prometheus.Metric) {
 	err, allPoolStats := c.bigip.ShowAllPoolStats()
 	if err != nil {
 		c.collectorScrapeStatus.WithLabelValues("pool").Set(float64(0))
-		logger.Warningf("Failed to get statistics for pools")
+		logger.Warningf("Failed to get statistics for pools: %s", err)
 	} else {
 		for key, poolStats := range allPoolStats.Entries {
 			keyParts := strings.Split(key, "/")

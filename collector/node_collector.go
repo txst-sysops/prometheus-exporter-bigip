@@ -182,7 +182,7 @@ func (c *NodeCollector) Collect(ch chan<- prometheus.Metric) {
 	err, allNodeStats := c.bigip.ShowAllNodeStats()
 	if err != nil {
 		c.collectorScrapeStatus.WithLabelValues("node").Set(float64(0))
-		logger.Warningf("Failed to get statistics for nodes (%s)", err)
+		logger.Warningf("Failed to get statistics for nodes: %s", err)
 	} else {
 		for key, nodeStats := range allNodeStats.Entries {
 			keyParts := strings.Split(key, "/")

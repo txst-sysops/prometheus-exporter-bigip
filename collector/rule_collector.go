@@ -143,7 +143,7 @@ func (c *RuleCollector) Collect(ch chan<- prometheus.Metric) {
 	err, allRuleStats := c.bigip.ShowAllRuleStats()
 	if err != nil {
 		c.collectorScrapeStatus.WithLabelValues("rule").Set(float64(0))
-		logger.Warningf("Failed to get statistics for rules")
+		logger.Warningf("Failed to get statistics for rules: %s", err)
 	} else {
 		for key, ruleStats := range allRuleStats.Entries {
 			keyParts := strings.Split(key, "/")
