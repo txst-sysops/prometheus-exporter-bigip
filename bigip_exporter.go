@@ -28,60 +28,24 @@ func configIntDefault(value int, fallback int) int {
 	return fallback
 }
 
-func listen(exporterBindAddress string, exporterBindPort int, sources map[string]*prometheus.Registry) {
-    // Handler for the /metrics endpoint
-    http.HandleFunc("/metrics", func(w http.ResponseWriter, r *http.Request) {
-        target := r.URL.Query().Get("target")
-        if target == "" {
-            http.Error(w, "Missing 'target' query parameter", http.StatusBadRequest)
-            return
-        }
+func listen(exporterBindAddress string, exporterBindPort int, cfg *config.Config) {
+	http.HandleFunc("/metrics", func(w http.ResponseWriter, r *http.Request) {
+		target := r.URL.Query().Get("target")
+		if target == "" {
+			http.Error(w, "Missing 'target' query parameter", http.StatusBadRequest)
+			return
+		}
 
-        registry, ok := sources[target]
-        if !ok {
-            http.Error(w, fmt.Sprintf("Target '%s' not found", target), http.StatusNotFound)
-            return
-        }
-
-        // Serve metrics using the matching registry
-        promhttp.HandlerFor(registry, promhttp.HandlerOpts{}).ServeHTTP(w, r)
-    })
-
-    // Root endpoint for listing available targets
-    http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-        w.Write([]byte(`<html>
-            <head><title>BIG-IP Exporter</title></head>
-            <body>
-            <h1>BIG-IP Exporter</h1>
-            <p>Available targets:</p>
-            <ul>
-        `))
-        for sourceName := range sources {
-            w.Write([]byte(fmt.Sprintf(`<li><a href="/metrics?target=%s">%s</a></li>
-			`, sourceName, sourceName)))
-        }
-        w.Write([]byte(`</ul>
-            </body>
-            </html>
-        `))
-    })
-
-    exporterBind := fmt.Sprintf("%s:%d", exporterBindAddress, exporterBindPort)
-    logger.Infof("Exporter listening on %s", exporterBind)
-    logger.Criticalf("Process failed: %s", http.ListenAndServe(exporterBind, nil))
-}
-
-func main() {
-	cfg := config.GetConfig()
-
-	// Map to hold separate registries for each source
-	sourceRegistries := make(map[string]*prometheus.Registry)
-
-	for name, source := range cfg.Sources {
-		cred, exists := cfg.Credentials[source.Credentials]
+		source, exists := cfg.Sources[target]
 		if !exists {
-			logger.Criticalf("Missing %s credentials for source %s", source.Credentials, name)
-			continue
+			http.Error(w, fmt.Sprintf("Target '%s' not found", target), http.StatusNotFound)
+			return
+		}
+
+		cred, credExists := cfg.Credentials[source.Credentials]
+		if !credExists {
+			http.Error(w, fmt.Sprintf("Missing credentials for target '%s'", target), http.StatusInternalServerError)
+			return
 		}
 
 		sourcePort := configIntDefault(source.Port, 443)
@@ -91,19 +55,62 @@ func main() {
 			authMethod = f5.BASIC_AUTH
 		}
 
+		// Create a new BIG-IP client for this request
 		bigip := f5.New(bigipEndpoint, cred.Username, cred.Password, authMethod)
 
+		// Create a new collector for this request
 		bigipCollector, err := collector.NewBigipCollector(bigip, cfg.Exporter.Namespace, source.Partitions)
 		if err != nil {
-			logger.Criticalf("Failed to create collector for %s: %s", name, err)
-			continue
+			http.Error(w, fmt.Sprintf("Failed to create collector: %s", err), http.StatusInternalServerError)
+			return
 		}
 
+		// Use a temporary registry for this request
 		registry := prometheus.NewRegistry()
 		registry.MustRegister(bigipCollector)
-		sourceRegistries[name] = registry
+
+		// Serve metrics using the temporary registry
+		promhttp.HandlerFor(registry, promhttp.HandlerOpts{}).ServeHTTP(w, r)
+	})
+
+	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		w.Write([]byte(`<html>
+			<head><title>BIG-IP Exporter</title></head>
+			<body>
+			<h1>BIG-IP Exporter</h1>
+			<p>Available targets:</p>
+			<ul>
+		`))
+		for sourceName := range cfg.Sources {
+			w.Write([]byte(fmt.Sprintf(`<li><a href="/metrics?target=%s">%s</a></li>
+			`, sourceName, sourceName)))
+		}
+		w.Write([]byte(`</ul>
+			</body>
+			</html>
+		`))
+	})
+
+	exporterBind := fmt.Sprintf("%s:%d", exporterBindAddress, exporterBindPort)
+	logger.Infof("Exporter listening on %s", exporterBind)
+	logger.Criticalf("Process failed: %s", http.ListenAndServe(exporterBind, nil))
+}
+
+func main() {
+	// Load the configuration
+	cfg := config.GetConfig()
+
+	// Validate configuration
+	if len(cfg.Sources) == 0 {
+		logger.Criticalf("No sources configured. Exiting.")
+		return
+	}
+	if len(cfg.Credentials) == 0 {
+		logger.Criticalf("No credentials configured. Exiting.")
+		return
 	}
 
-	listen(cfg.Exporter.BindAddress, cfg.Exporter.BindPort, sourceRegistries)
+	// Start the HTTP server
+	listen(cfg.Exporter.BindAddress, cfg.Exporter.BindPort, cfg)
 }
 
