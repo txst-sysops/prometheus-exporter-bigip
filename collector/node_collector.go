@@ -4,7 +4,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/pr8kerl/f5er/f5"
+	"github.com/txst-sysops/f5er/f5"
 	"github.com/prometheus/client_golang/prometheus"
 )
 

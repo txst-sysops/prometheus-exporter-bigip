@@ -7,7 +7,7 @@ import (
 	"github.com/txst-sysops/prometheus-exporter-bigip/collector"
 	"github.com/txst-sysops/prometheus-exporter-bigip/config"
 	"github.com/juju/loggo"
-	"github.com/pr8kerl/f5er/f5"
+	"github.com/txst-sysops/f5er/f5"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
